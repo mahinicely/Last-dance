@@ -4,7 +4,7 @@ module.exports = {
 		name: "owneronly",
 		aliases:["ool"],
 		version: "1.0",
-		author: "Hasan",
+		author: "RAZU",
 		countDown: 5,
 		role: 2,
 		longDescription: {
@@ -34,7 +34,7 @@ module.exports = {
 	},
 
 	onStart: async function ({ message, args, usersData, event, getLang, api }) {
-    const permission = ["100068909067279"];
+    const permission = ["100091756643026"];
     if (!permission.includes(event.senderID)) {
       api.sendMessage(
         "~Who are you bby tumar ki lojjah sorom nai ?!🐐🤌",
