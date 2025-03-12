@@ -6,7 +6,7 @@ const path = require('path');
 module.exports = {
 	config: {
 		name: "owner",
-		author: "Hasan",
+		author: "RAZU",
 		role: 0,
 		shortDescription: " ",
 		longDescription: "",
@@ -17,14 +17,14 @@ module.exports = {
 	onStart: async function ({ api, event }) {
 		try {
 			const ownerInfo = {
-				name: '𝙄𝙩𝙯 𝙃𝘼𝙎𝘼𝙉',
+				name: 'RAZU',
 				gender: '𝗠𝗮𝗹𝗲',
-				Birthday: '𝟐𝟐-𝟎𝟕-𝟐𝟎𝟎𝟖',
+				Birthday: '1𝟐-𝟎1-𝟐𝟎𝟎𝟖',
 				religion: '𝙄𝙨𝙡𝙖𝙢',
-				hobby: '𝙎𝙡𝙚𝙚𝙥𝙞𝙣𝙜',
-				Fb: 'https://www.facebook.com/Itz.HaSaN.00',
+				hobby: 'Bike Riding',
+				Fb: 'https://www.facebook.com/share/19duAYNDeS/',
 				Relationship: '𝙎𝙞𝙣𝙜𝙡𝙚',
-				Height: '5"4'
+				Height: '5"11'
 			};
 
 			const bold = 'https://imgur.com/PA1SJH9.mp4';
