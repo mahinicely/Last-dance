@@ -21,7 +21,7 @@ Yo, my prefix is [ 𓆩 / 𓆪 ]\n
 ➥ ✓sim [bby] -> talk to bot
 ➥ ✓callad [message] -> report any problem encountered
 ➥ ✓help -> usage of command\n\nHave fun using it enjoy!❤️\nBot Developer: https://www.facebook.com/share/19duAYNDeS/`,
- attachment: await global.utils.getStreamFromURL("https://i.imgur.com/ISEV6RT.mp4")
+ attachment: await global.utils.getStreamFromURL("https://i.imgur.com/jtqJIEL.mp4")
  });
  }
  }
