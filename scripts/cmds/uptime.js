@@ -42,7 +42,7 @@ module.exports = {
    🌊ʸᵒᵘʳ Icₑ cᵣₑₐₘ🍨
 ┗━━━━━━━━━━━━━━━┛
 📆 Uptime: ${uptimeString}
-🙋 Total Users: ${allUsers.length}
+👥 Total Users: ${allUsers.length}
 💬 Total Threads: ${allThreads.length}
 🔥 Active Threads: ${activeThreads}
 📨 Total Messages: ${totalMessages}
