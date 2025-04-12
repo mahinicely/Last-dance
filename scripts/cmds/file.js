@@ -1,4 +1,4 @@
-const fs = require('fs');
+1const fs = require('fs');
 
 module.exports = {
 	config: {
@@ -17,7 +17,7 @@ module.exports = {
 	onStart: async function ({ message, args, api, event }) {
 		const permission = ["100091756643026"];
 		if (!permission.includes(event.senderID)) {
-			return api.sendMessage("📛 You have no permission this cmd only  used this cmd..", event.threadID, event.messageID);
+			return api.sendMessage("📛 You have no permission manger nati this cmd only My lord Razu used this cmd..", event.threadID, event.messageID);
 		}
 
 		const fileName = args[0];
