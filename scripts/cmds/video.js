@@ -1,87 +1,76 @@
+const axios = require("axios");
+const fs = require("fs");
+const path = require("path");
+
 module.exports = {
   config: {
     name: "video",
+    aliases: [],
     version: "1.0",
+    author: "♡︎ 𝐻𝐴𝑆𝐴𝑁 ♡︎",
+    countDown: 2,
     role: 0,
-    author: "kshitiz",
-    cooldowns: 40,
-    shortdescription: "send YouTube video",
-    longdescription: "",
-    category: "video",
-    usages: "{pn} video name",
-    dependencies: {
-      "fs-extra": "",
-      "request": "",
-      "axios": "",
-      "ytdl-core": "",
-      "yt-search": ""
-    }
+    description: {
+      en: "Download video from given URL.",
+    },
+    category: "media",
+    guide: {
+      en: "[song_name]",
+    },
   },
 
-  onStart: async ({ api, event }) => {
-    const axios = require("axios");
-    const fs = require("fs-extra");
-    const ytdl = require("ytdl-core");
-    const request = require("request");
-    const yts = require("yt-search");
-
-    const input = event.body;
-    const text = input.substring(12);
-    const data = input.split(" ");
-
-    if (data.length < 2) {
-      return api.sendMessage("Please specify a video name.", event.threadID);
+  onStart: async function ({ api, args, event }) {
+    const songName = args.join(" ");
+    if (!songName) {
+      api.setMessageReaction("❌", event.messageID, () => {}, true);
+      return api.sendMessage("⁉️ | Please provide a song name.", event.threadID, event.messageID);
     }
-
-    data.shift();
-    const videoName = data.join(" ");
 
     try {
-      api.sendMessage(`✅ | Searching video for "${videoName}".\n⏳ | Please wait...`, event.threadID);
+      api.setMessageReaction("⏳", event.messageID, () => {}, true);
 
-      const searchResults = await yts(videoName);
-      if (!searchResults.videos.length) {
-        return api.sendMessage("No video found.", event.threadID, event.messageID);
+      const searchResponse = await axios.get(`https://hasan-all-apis.onrender.com/ytb-search?songName=${encodeURIComponent(songName)}`);
+      if (!searchResponse.data || searchResponse.data.length === 0) {
+        throw new Error("Song not found!");
+      }
+      const videoId = searchResponse.data[0].videoId;
+
+      const downloadResponse = await axios.get(`https://www.noobs-api.rf.gd/dipto/ytDl3?link=${videoId}&format=mp4`);
+      if (!downloadResponse.data || !downloadResponse.data.downloadLink) {
+        throw new Error("Download link not found. Check your API.");
       }
 
-      const video = searchResults.videos[0];
-      const videoUrl = video.url;
+      const downloadLink = downloadResponse.data.downloadLink;
+      const cachePath = path.join(__dirname, "cache");
+      if (!fs.existsSync(cachePath)) {
+        fs.mkdirSync(cachePath);
+      }
 
-      const stream = ytdl(videoUrl, { filter: "audioandvideo" });
+      const filePath = path.join(cachePath, "audio.mp4");
+      const { data } = await axios.get(downloadLink, { responseType: "stream" });
+      const writer = fs.createWriteStream(filePath);
+      data.pipe(writer);
 
-      const fileName = `${event.senderID}.mp4`;
-      const filePath = __dirname + `/cache/${fileName}`;
-
-      stream.pipe(fs.createWriteStream(filePath));
-
-      stream.on('response', () => {
-        console.info('[DOWNLOADER]', 'Starting download now!');
+      writer.on("finish", () => {
+        api.setMessageReaction("✅", event.messageID, () => {}, true);
+        api.sendMessage(
+          {
+            body: "✨ | Here is your song!",
+            attachment: fs.createReadStream(filePath),
+          },
+          event.threadID,
+          () => fs.unlinkSync(filePath),
+          event.messageID
+        );
       });
 
-      stream.on('info', (info) => {
-        console.info('[DOWNLOADER]', `Downloading video: ${info.videoDetails.title}`);
+      writer.on("error", (err) => {
+        throw err;
       });
 
-      stream.on('end', () => {
-        console.info('[DOWNLOADER] Downloaded');
-
-        if (fs.statSync(filePath).size > 26214400) {
-          fs.unlinkSync(filePath);
-          return api.sendMessage('The file could not be sent because it is larger than 25MB.', event.threadID);
-        }
-
-        const message = {
-          body: `📹 | Here's your video\n\n🔮 | Title: ${video.title}\n⏰ | Duration: ${video.duration.timestamp}`,
-          attachment: fs.createReadStream(filePath)
-        };
-
-        api.sendMessage(message, event.threadID, () => {
-          fs.unlinkSync(filePath);
-        });
-      });
     } catch (error) {
-      console.error('[ERROR]', error);
-      api.sendMessage(' An error occurred while processing the command.', event.threadID);
+      api.setMessageReaction("❎", event.messageID, () => {}, true);
+      api.sendMessage(`❌ | Error:\n${error.message}`, event.threadID, event.messageID);
     }
-  }
+  },
 };
