@@ -5,12 +5,12 @@ const fs = require("fs-extra");
 
 module.exports = {
   config: {
-    name: "system", "stm"
+    name: "system",
     aliases: [],
     version: "1.0",
     author: "SAIF 🐔",
     countDown: 5,
-    role: 2,
+    role: 0,
     shortDescription: "System",
     longDescription: "",
     category: "system",
