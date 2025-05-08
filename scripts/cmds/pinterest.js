@@ -1,95 +1,130 @@
-const axios = require('axios');
-const fs = require('fs-extra');
+const axios = require("axios");
+
 
 module.exports = {
-  config: {
-    name: 'pinterest',
-    aliases: ["pint", "pinter", "pin"],
-    version: '1.2',
-    author: 'Samuel',
-    countDown: 5,
-    role: 0,
-    category: 'Image Search',
-    shortDescription: {
-      en: "Search for images on Pinterest based on a keyword",
-    },
-    longDescription: {
-      en: "This command searches for images on Pinterest based on a provided keyword.",
-    },
-    guide: {
-      en: "{pn} 'keyword' -'number of search results'\nExample: {pn} cute -10\nIf no number is provided, the command will return the first 5 images.",
-    },
-  },
 
-  onStart: async function ({ api, args, event , message }) {
-    const { getPrefix } = global.utils;
-       const p = getPrefix(event.threadID);
-    const approvedmain = JSON.parse(fs.readFileSync(`${__dirname}/assist_json/approved_main.json`));
-    const bypassmain = JSON.parse(fs.readFileSync(`${__dirname}/assist_json/bypass_id.json`));
-    const bypassmUid = event.senderID;
-    if (bypassmain.includes(bypassmUid)) {
-      console.log(`User ${bypassmUid} is in bypass list. Skipping the main approval check.`);
-    } else {
-      const threadmID = event.threadID;
-      if (!approvedmain.includes(threadmID)) {
-        const msgSend = message.reply(`cmd 'Pinterest' is locked 🔒...\n Reason : Bot's main cmd \nyou need permission to use all main cmds.\n\nType ${p}requestMain to send a request to admin`);
-        setTimeout(async () => {
-          message.unsend((await msgSend).messageID);
-        }, 40000);
-        return;
-      }
-    }  
-                                                  
+  config: {
+
+    name: "pinterest",
+
+    aliases: ["pin", "pimg"],
+
+    version: "1.0",
+
+    author: "Arafat",
+
+    countDown: 5,
+
+    role: 0,
+
+    shortDescription: {
+
+      en: "Fetch images from Pinterest"
+
+    },
+
+    longDescription: {
+
+      en: "Fetch up to 50 images from Pinterest using Google CSE"
+
+    },
+
+    category: "media",
+
+    guide: {
+
+      en: "#Pinterest <keyword> - <count>\n\nExample:\n#Pinterest Naruto - 20"
+
+    }
+
+  },
 
 
+  onStart: async function ({ api, event, args }) {
 
-    
-    let keyword = args.join(' ');
-    let numberSearch = 4;
-    const match = keyword.match(/(.+?)\s*-?(\d+)?$/);
-    if (match) {
-      keyword = match[1].trim();
-      if (match[2]) {
-        numberSearch = parseInt(match[2]);
-      }
-    }
+    const apiKey = "AIzaSyAQuveDGpMZOMzO7-Ai6M5usHnzko7F4QA"; // তোমার Google API Key
 
-    if (!keyword) {
-      api.sendMessage("Please provide a keyword.\nExample: Pinterest cute anime boy -10", event.threadID, event.messageID);
-      return;
-    }
+    const cx = "70d51de06b6454014"; // তোমার CSE ID
 
-    if (numberSearch > 20) {
-      api.sendMessage("Maximum number of search results is 20.", event.threadID, event.messageID);
-      return;
-    }
 
-    try {
-      const res = await axios.get(`https://api-dien.kira1011.repl.co/pinterest?search=${encodeURIComponent(keyword)}`);
-      const data = res.data.data;
-      let num = 0;
-      const img = [];
+    let input = args.join(" ");
 
-      for (let i = 0; i < numberSearch; i++) {
-        const path = __dirname + `/tmp/${num += 1}.jpg`;
-        const getDown = (await axios.get(`${data[i]}`, { responseType: 'arraybuffer' })).data;
-        fs.writeFileSync(path, Buffer.from(getDown, 'utf-8'));
-        img.push(fs.createReadStream(path));
-      }
+    let count = 10;
 
-      api.sendMessage({
-        body: `${numberSearch} search results for keyword: ${keyword}`,
-        attachment: img
-      }, event.threadID, event.messageID);
+    if (input.includes("-")) {
 
-      for (let ii = 1; ii < numberSearch; ii++) {
-        fs.unlinkSync(__dirname + `/tmp/${ii}.jpg`);
-      }
-    } catch (err) {
-      console.error(err);
-      api.sendMessage("Your search Input in Disallowed in Pinterest.", event.threadID, event.messageID);
-      return;
-    }
-  }
+      const parts = input.split("-");
+
+      input = parts[0].trim();
+
+      count = Math.min(parseInt(parts[1].trim()), 50);
+
+    }
+
+
+    const query = encodeURIComponent(input + " site:pinterest.com");
+
+
+    try {
+
+      const res = await axios.get(
+
+        `https://www.googleapis.com/customsearch/v1?q=${query}&cx=${cx}&key=${apiKey}&searchType=image&num=${count}`
+
+      );
+
+
+      const items = res.data.items;
+
+      if (!items || items.length === 0) {
+
+        return api.sendMessage("কোনো ছবি পাওয়া যায়নি!", event.threadID);
+
+      }
+
+
+      const attachments = [];
+
+      for (const item of items) {
+
+        try {
+
+          const imgStream = await global.utils.getStreamFromURL(item.link);
+
+          attachments.push(imgStream);
+
+        } catch (err) {
+
+          console.log("ছবি আনতে সমস্যা:", item.link);
+
+        }
+
+      }
+
+
+      if (attachments.length === 0) {
+
+        return api.sendMessage("ছবি আনতে সমস্যা হয়েছে!", event.threadID);
+
+      }
+
+
+      await api.sendMessage({
+
+        body: `𝚋𝚋𝚢 𝚑𝚎𝚊𝚛 𝚒𝚜 𝚢𝚘𝚞𝚛 ${input}  ${attachments.length} 𝚌𝚘𝚞𝚗𝚝 Pinterest 𝚙𝚑𝚘𝚝𝚘`,
+
+        attachment: attachments
+
+      }, event.threadID);
+
+    } catch (e) {
+
+      console.error(e);
+
+      return api.sendMessage("Pinterest থেকে ছবি আনতে সমস্যা হয়েছে!", event.threadID);
+
+    }
+
+  }
+
 };
-                 
