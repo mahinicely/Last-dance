@@ -39,7 +39,7 @@ module.exports = {
       // Stylish message design
       const message = `
 ┏━━━━━━━━━━━━━━━┓
-   🌊ʸᵒᵘʳ Icₑ cᵣₑₐₘ🍨
+     🌊ʸᵒᵘ 𝐓𝐨𝐦 ᵇᵃᵇʸ🍨
 ┗━━━━━━━━━━━━━━━┛
 📆 Uptime: ${uptimeString}
 👥 Total Users: ${allUsers.length}
@@ -47,7 +47,7 @@ module.exports = {
 🔥 Active Threads: ${activeThreads}
 📨 Total Messages: ${totalMessages}
 ━━━━━━━━━━━━━━━━━━━
-💡|R_A_Z_U_S__B_O_T|
+💡|M_A_H_I_N_S__B_O_T|
       `;
 
       api.sendMessage(message.trim(), event.threadID);
