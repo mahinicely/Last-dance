@@ -1,76 +1,105 @@
-const axios = require("axios");
-const fs = require("fs");
-const path = require("path");
-
 module.exports = {
-  config: {
-    name: "video",
-    aliases: [],
-    version: "1.0",
-    author: "♡︎ 𝐻𝐴𝑆𝐴𝑁 ♡︎",
-    countDown: 2,
-    role: 0,
-    description: {
-      en: "Download video from given URL.",
-    },
-    category: "media",
-    guide: {
-      en: "[song_name]",
-    },
-  },
 
-  onStart: async function ({ api, args, event }) {
-    const songName = args.join(" ");
-    if (!songName) {
-      api.setMessageReaction("❌", event.messageID, () => {}, true);
-      return api.sendMessage("⁉️ | Please provide a song name.", event.threadID, event.messageID);
-    }
+  config: {
 
-    try {
-      api.setMessageReaction("⏳", event.messageID, () => {}, true);
+    name: "auto",
 
-      const searchResponse = await axios.get(`https://hasan-all-apis.onrender.com/ytb-search?songName=${encodeURIComponent(songName)}`);
-      if (!searchResponse.data || searchResponse.data.length === 0) {
-        throw new Error("Song not found!");
-      }
-      const videoId = searchResponse.data[0].videoId;
+    version: "0.0.2",
 
-      const downloadResponse = await axios.get(`https://www.noobs-api.rf.gd/dipto/ytDl3?link=${videoId}&format=mp4`);
-      if (!downloadResponse.data || !downloadResponse.data.downloadLink) {
-        throw new Error("Download link not found. Check your API.");
-      }
+    permission: 0,
 
-      const downloadLink = downloadResponse.data.downloadLink;
-      const cachePath = path.join(__dirname, "cache");
-      if (!fs.existsSync(cachePath)) {
-        fs.mkdirSync(cachePath);
-      }
+    prefix: false,
 
-      const filePath = path.join(cachePath, "audio.mp4");
-      const { data } = await axios.get(downloadLink, { responseType: "stream" });
-      const writer = fs.createWriteStream(filePath);
-      data.pipe(writer);
+    credits: "Arafat",
 
-      writer.on("finish", () => {
-        api.setMessageReaction("✅", event.messageID, () => {}, true);
-        api.sendMessage(
-          {
-            body: "✨ | Here is your song!",
-            attachment: fs.createReadStream(filePath),
-          },
-          event.threadID,
-          () => fs.unlinkSync(filePath),
-          event.messageID
-        );
-      });
+    description: "Auto download video (TikTok, FB, IG etc)",
 
-      writer.on("error", (err) => {
-        throw err;
-      });
+    category: "user",
 
-    } catch (error) {
-      api.setMessageReaction("❎", event.messageID, () => {}, true);
-      api.sendMessage(`❌ | Error:\n${error.message}`, event.threadID, event.messageID);
-    }
-  },
+    usages: "",
+
+    cooldowns: 5,
+
+  },
+
+
+  onStart: async function () {},
+
+
+  onChat: async function ({ api, event }) {
+
+    const axios = require("axios");
+
+    const fs = require("fs-extra");
+
+    const { alldown } = require("nayan-videos-downloader");
+
+
+    const content = event.body || '';
+
+    const body = content.toLowerCase();
+
+
+    if (body.startsWith("https://")) {
+
+      if (
+
+        body.includes("tiktok.com") ||
+
+        body.includes("facebook.com") ||
+
+        body.includes("instagram.com") ||
+
+        body.includes("fb.watch")
+
+      ) {
+
+        api.setMessageReaction("🔍", event.messageID, () => {}, true);
+
+
+        try {
+
+          const data = await alldown(content);
+
+          const { low, high, title } = data.data;
+
+
+          api.setMessageReaction("✔️", event.messageID, () => {}, true);
+
+
+          const video = (await axios.get(high || low, {
+
+            responseType: "arraybuffer"
+
+          })).data;
+
+
+          const path = __dirname + "/cache/auto.mp4";
+
+          fs.writeFileSync(path, Buffer.from(video, "utf-8"));
+
+
+          return api.sendMessage({
+
+            body: `《TITLE》: ${title}`,
+
+            attachment: fs.createReadStream(path)
+
+          }, event.threadID, () => fs.unlinkSync(path), event.messageID);
+
+
+        } catch (err) {
+
+          api.setMessageReaction("❌", event.messageID, () => {}, true);
+
+          return api.sendMessage("❌ ভিডিও ডাউনলোড করতে ব্যর্থ হয়েছে আবার চেষ্টা করুন!", event.threadID, event.messageID);
+
+        }
+
+      }
+
+    }
+
+  }
+
 };
