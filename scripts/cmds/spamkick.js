@@ -1,8 +1,7 @@
 module.exports.config = {
   name: "spamkick",
-  aliases:["spk"],
   version: "1.0.0",
-  role: 1, 
+  role: 0, 
   author: "Dipto",
   usePrefix: true,
   description: { 
