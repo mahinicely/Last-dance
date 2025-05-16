@@ -1,0 +1,12 @@
+# Exported from Render on 2025-05-16T13:28:58Z
+services:
+- type: web
+  name: Ice-mahin
+  runtime: docker
+  repo: https://github.com/mahinicely/Ice-mahin
+  plan: free
+  region: oregon
+  dockerContext: .
+  dockerfilePath: ./Dockerfile
+  autoDeployTrigger: commit
+version: "1"
