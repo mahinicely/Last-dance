@@ -1,4 +1,4 @@
-/cmd install admins.js const { config } = global.GoatBot;
+const { config } = global.GoatBot;
 const { writeFileSync } = require("fs-extra");
 
 module.exports = {
