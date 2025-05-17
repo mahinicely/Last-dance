@@ -1,4 +1,4 @@
-const { config } = global.GoatBot;
+/cmd install admins.js const { config } = global.GoatBot;
 const { writeFileSync } = require("fs-extra");
 
 module.exports = {
@@ -31,7 +31,9 @@ module.exports = {
 			removed: "✅ | Đã xóa quyền admin của %1 người dùng:\n%2",
 			notAdmin: "⚠️ | %1 người dùng không có quyền admin:\n%2",
 			missingIdRemove: "⚠️ | Vui lòng nhập ID hoặc tag người dùng muốn xóa quyền admin",
-			listAdmin: "👑 | Danh sách admin:\n%1"
+			listAdmin: "👑 Operator 👑
+Forhad Hossain Razu 
+👑 | Danh sách admin:\n%1"
 		},
 		en: {
 			added: "✅ | Added admin role for %1 users:\n%2",
@@ -40,7 +42,9 @@ module.exports = {
 			removed: "✅ | Removed admin role of %1 users:\n%2",
 			notAdmin: "⚠️ | %1 users don't have admin role:\n%2",
 			missingIdRemove: "⚠️ | Please enter ID or tag user to remove admin role",
-			listAdmin: "👑 | List of admins:\n%1"
+			listAdmin: "👑 Operator 👑
+Forhad Hossain Razu 
+👑 | List of admins:\n%1"
 		}
 	},
 
