@@ -31,9 +31,7 @@ module.exports = {
 			removed: "✅ | Đã xóa quyền admin của %1 người dùng:\n%2",
 			notAdmin: "⚠️ | %1 người dùng không có quyền admin:\n%2",
 			missingIdRemove: "⚠️ | Vui lòng nhập ID hoặc tag người dùng muốn xóa quyền admin",
-			listAdmin: "👑 Operator 👑
-Forhad Hossain Razu 
-👑 | Danh sách admin:\n%1"
+			listAdmin: "👑 | Danh sách admin:\n%1"
 		},
 		en: {
 			added: "✅ | Added admin role for %1 users:\n%2",
@@ -42,9 +40,7 @@ Forhad Hossain Razu
 			removed: "✅ | Removed admin role of %1 users:\n%2",
 			notAdmin: "⚠️ | %1 users don't have admin role:\n%2",
 			missingIdRemove: "⚠️ | Please enter ID or tag user to remove admin role",
-			listAdmin: "👑 Operator 👑
-Forhad Hossain Razu 
-👑 | List of admins:\n%1"
+			listAdmin: "👑 Operator 👑\n MAHIN\n\n👑 | List of admins:\n%1"
 		}
 	},
 
