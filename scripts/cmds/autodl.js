@@ -6,7 +6,7 @@ module.exports = {
   config: {
     name: 'auto',
     version: '5.4',
-    author: 'ariyan',
+    author: 'Mahin',
     countDown: 5,
     role: 0,
     shortDescription: 'Auto download videos from FB, YT, IG, TikTok',
