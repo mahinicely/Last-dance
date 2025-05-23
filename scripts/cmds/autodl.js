@@ -1,171 +1,82 @@
 const fs = require("fs-extra");
 const axios = require("axios");
-const path = require("path");
-const { getStreamFromURL, randomString } = global.utils;
-const getFBInfo = require("@xaviabot/fb-downloader");
-
-function loadAutoLinkStates() {
-	try {
-		const data = fs.readFileSync("autolink.json", "utf8");
-		return JSON.parse(data);
-	} catch (err) {
-		return {};
-	}
-}
-
-function saveAutoLinkStates(states) {
-	fs.writeFileSync("autolink.json", JSON.stringify(states, null, 2));
-}
-
-let autoLinkStates = loadAutoLinkStates();
+const request = require("request");
 
 module.exports = {
-	threadStates: {},
-	config: {
-		name: 'autodl',
-		version: '5.0',
-		author: 'cliff',
-		countDown: 5,
-		role: 0,
-		shortDescription: 'Auto video downloader for Instagram, Facebook, TikTok',
-		longDescription: '',
-		category: 'media',
-		guide: {
-			en: '{p}{n}',
-		}
-	},
-	onStart: async function ({ api, event }) {
-		const threadID = event.threadID;
+  config: {
+    name: 'auto',
+    version: '5.4',
+    author: 'ariyan',
+    countDown: 5,
+    role: 0,
+    shortDescription: 'Auto download videos from FB, YT, IG, TikTok',
+    category: 'media',
+  },
 
-		if (!autoLinkStates[threadID]) {
-			autoLinkStates[threadID] = 'on'; 
-			saveAutoLinkStates(autoLinkStates);
-		}
+  onStart: async function ({ api, event }) {
+    return api.sendMessage("✅ AutoDownloader active for FB, YouTube, TikTok & Instagram links.", event.threadID);
+  },
 
-		if (!this.threadStates[threadID]) {
-			this.threadStates[threadID] = {};
-		}
+  onChat: async function ({ api, event }) {
+    const { threadID, messageID, body } = event;
+    if (!body) return;
 
-		if (event.body.toLowerCase().includes('autolink off')) {
-			autoLinkStates[threadID] = 'off';
-			saveAutoLinkStates(autoLinkStates);
-			api.sendMessage("AutoLink is now turned off for this chat.", event.threadID, event.messageID);
-		} else if (event.body.toLowerCase().includes('autolink on')) {
-			autoLinkStates[threadID] = 'on';
-			saveAutoLinkStates(autoLinkStates);
-			api.sendMessage("AutoLink is now turned on for this chat.", event.threadID, event.messageID);
-		}
-	},
-	onChat: async function ({ api, event }) {
-		const threadID = event.threadID;
+    const urlMatch = body.match(/(https?:\/\/[^\s]+)/);
+    if (!urlMatch) return;
 
-		if (this.checkLink(event.body)) {
-			const { url } = this.checkLink(event.body);
-			console.log(`Attempting to download from URL: ${url}`);
-			if (autoLinkStates[threadID] === 'on' || !autoLinkStates[threadID]) {
-				this.downLoad(url, api, event);
-			} else {
-				api.sendMessage("", event.threadID, event.messageID);
-			}
-			api.setMessageReaction("🙆", event.messageID, (err) => {}, true);
-		}
-	},
-	downLoad: function (url, api, event) {
-		const time = Date.now();
-		const path = __dirname + `/cache/${time}.mp4`;
+    const url = urlMatch[0];
+    const supportedDomains = ["facebook.com", "fb.watch", "youtube.com", "youtu.be", "instagram.com", "tiktok.com"];
+    const platform = supportedDomains.find(domain => url.includes(domain));
+    if (!platform) return;
 
-		if (url.includes("instagram")) {
-			this.downloadInstagram(url, api, event, path);
-		} else if (url.includes("facebook")) {
-			this.downloadFacebook(url, api, event, path);
-		} else if (url.includes("tiktok")) {
-			this.downloadTikTok(url, api, event, path);
-		}
-	},
-	downloadInstagram: async function (url, api, event, path) {
-		try {
-			const res = await axios.get(`https://cprojectapisjonellv2.adaptable.app/api/fbdl?url=${encodeURIComponent(url)}`);
-			const videoUrl = res.data.url.data[0].url;
-			const response = await axios({
-				method: "GET",
-				url: videoUrl,
-				responseType: "arraybuffer"
-			});
-			fs.writeFileSync(path, Buffer.from(response.data, "utf-8"));
-			if (fs.statSync(path).size / 1024 / 1024 > 25) {
-				return api.sendMessage("The file is too large, cannot be sent", event.threadID, () => fs.unlinkSync(path), event.messageID);
-			}
+    const platformNames = {
+      "facebook.com": "𝙁𝙖𝙘𝙚𝙗𝙤𝙤𝙠",
+      "fb.watch": "𝙁𝙖𝙘𝙚𝙗𝙤𝙤𝙠",
+      "youtube.com": "𝙔𝙤𝙪𝙏𝙪𝙗𝙚",
+      "youtu.be": "𝙔𝙤𝙪𝙏𝙪𝙗𝙚",
+      "instagram.com": "𝙄𝙣𝙨𝙩𝙖𝙜𝙧𝙖𝙢",
+      "tiktok.com": "𝙏𝙞𝙠𝙏𝙤𝙠"
+    };
+    const platformName = platformNames[platform] || "𝙑𝙞𝙙𝙚𝙤";
 
-			api.sendMessage({
-					body: `𝖠𝗎𝗍𝗈 𝖣𝗈𝗐𝗇 Instagram\n\n𝗬𝗔𝗭𝗞𝗬 𝗕𝗢𝗧 𝟭.𝟬.𝟬𝘃`,
-				attachment: fs.createReadStream(path)
-			}, event.threadID, () => fs.unlinkSync(path), event.messageID);
-		} catch (err) {
-			console.error(err);
-		}
-	},
-	downloadFacebook: async function (url, api, event, path) {
-		try {
-			const res = await getFBInfo(url);
-			if (res.success && res.download && res.download.length > 0) {
-				const videoUrl = res.download[0].url;
-				const response = await axios({
-					method: "GET",
-					url: videoUrl,
-					responseType: "stream"
-				});
-				if (response.headers['content-length'] > 87031808) {
-					return api.sendMessage("The file is too large, cannot be sent", event.threadID, () => fs.unlinkSync(path), event.messageID);
-				}
-				response.data.pipe(fs.createWriteStream(path));
-				response.data.on('end', async () => {
-					api.sendMessage({
-						attachment: fs.createReadStream(path)
-					}, event.threadID, () => fs.unlinkSync(path), event.messageID);
-				});
-			} else {
-				api.sendMessage("", event.threadID, event.messageID);
-			}
-		} catch (err) {
-			console.error(err);
-		}
-	},
-	downloadTikTok: async function (url, api, event, path) {
-		try {
-			const regEx_tiktok = /https:\/\/(www\.|vt\.)?tiktok\.com\//;
-			if (regEx_tiktok.test(url)) {
-				api.setMessageReaction("📥", event.messageID, () => {}, true);
-				const response = await axios.post(`https://www.tikwm.com/api/`, { url: url });
-				const data = response.data.data;
-				const videoStream = await axios({
-					method: 'get',
-					url: data.play,
-					responseType: 'stream'
-				});
-				const fileName = `TikTok-${Date.now()}.mp4`;
-				const videoFile = fs.createWriteStream(path);
+    const processingMsg = await api.sendMessage("⏳ 𝘿𝙤𝙬𝙣𝙡𝙤𝙖𝙙𝙞𝙣𝙜 𝙮𝙤𝙪𝙧 𝙫𝙞𝙙𝙚𝙤, 𝙝𝙤𝙡𝙙 𝙩𝙞𝙜𝙝𝙩...", threadID, messageID);
 
-				videoStream.data.pipe(videoFile);
+    try {
+      const res = await axios.get(`https://nayan-video-downloader.vercel.app/alldown?url=${encodeURIComponent(url)}`);
+      const data = res.data.data || {};
+      const { title, high, low } = data;
+      const videoURL = high || low;
 
-				videoFile.on('finish', () => {
-					videoFile.close(() => {
-						console.log('Downloaded video file.');
-						api.sendMessage({
-							body: `𝖠𝗎𝗍𝗈 𝖣𝗈𝗐𝗇 𝖳𝗂𝗄𝖳𝗈𝗄 \n\n𝙲𝚘𝚗𝚝𝚎𝚗𝚝: ${data.title}\n\n𝙻𝚒𝚔𝚎𝚜: ${data.digg_count}\n\n𝙲𝚘𝚖𝚖𝚎𝚗𝚝𝚜: ${data.comment_count}\n\n🌊ʸᵒᵘʳ Icₑ cᵣₑₐₘ🍨`,
-							attachment: fs.createReadStream(path)
-						}, event.threadID, () => {
-							fs.unlinkSync(path);
-						});
-					});
-				});
-			}
-		} catch (error) {
-			api.sendMessage(`Error when trying to download the TikTok video: ${error.message}`, event.threadID, event.messageID);
-		}
-	},
-	checkLink: function (url) {
-		if (url.includes("facebook") || url.includes("tiktok") || url.includes("instagram")) {
-			return { url: url };
-		}
-	}
+      if (!videoURL) {
+        await api.unsendMessage(processingMsg.messageID);
+        return api.sendMessage("❌ 𝙎𝙤𝙧𝙧𝙮, 𝙘𝙤𝙪𝙡𝙙𝙣’𝙩 𝙛𝙞𝙣𝙙 𝙖 𝙙𝙤𝙬𝙣𝙡𝙤𝙖𝙙𝙖𝙗𝙡𝙚 𝙫𝙞𝙙𝙚𝙤 𝙖𝙩 𝙩𝙝𝙖𝙩 𝙡𝙞𝙣𝙠.", threadID, messageID);
+      }
+
+      const imgurRes = await axios.get(`https://imgur-upload-psi.vercel.app/mahabub?url=${encodeURIComponent(videoURL)}`);
+      const imgurLink = imgurRes.data.url || "𝙐𝙣𝙖𝙫𝙖𝙞𝙡𝙖𝙗𝙡𝙚";
+
+      await api.unsendMessage(processingMsg.messageID);
+
+      const messageBody = 
+`🎬 𝙃𝙚𝙧𝙚 𝙞𝙨 𝙮𝙤𝙪𝙧 ${platformName} 𝙫𝙞𝙙𝙚𝙤!
+
+📌 𝙏𝙞𝙩𝙡𝙚: ${title || "𝙐𝙣𝙠𝙣𝙤𝙬𝙣"}
+🌐 𝙄𝙢𝙜𝙪𝙧 𝙇𝙞𝙣𝙠: ${imgurLink}`;
+
+      const filePath = "video.mp4";
+      request(videoURL)
+        .pipe(fs.createWriteStream(filePath))
+        .on("close", () => {
+          api.sendMessage({
+            body: messageBody,
+            attachment: fs.createReadStream(filePath)
+          }, threadID, () => fs.unlinkSync(filePath));
+        });
+
+    } catch (error) {
+      await api.unsendMessage(processingMsg.messageID);
+      console.error("AutoDL Error:", error.message || error);
+      api.sendMessage("❌ 𝙊𝙤𝙥𝙨! 𝙁𝙖𝙞𝙡𝙚𝙙 𝙩𝙤 𝙙𝙤𝙬𝙣𝙡𝙤𝙖𝙙 𝙩𝙝𝙚 𝙫𝙞𝙙𝙚𝙤.", threadID, messageID);
+    }
+  }
 };
