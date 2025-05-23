@@ -28,7 +28,7 @@ const sendMessage = (api, threadID, message, messageID) =>
   api.sendMessage(message, threadID, messageID);
 
 const cError = (api, threadID, messageID) => 
-  sendMessage(api, threadID, "error🦆💨", messageID);
+  sendMessage(api, threadID, "error🦆💨Mahin Teach kore nai aita🙈 tumi koro plz😘", messageID);
 
 const teachBot = async (api, threadID, messageID, senderID, teachText) => {
   const [ask, answers] = teachText.split(" - ").map((text) => text.trim());
@@ -87,7 +87,7 @@ module.exports.config = {
   name: "bbu",
   aliases: ["bbz", "hey"],
   version: "1.6.9",
-  author: "Nazrul",
+  author: "Nazrul/modify by Dbz_Mahin",
   role: 0,
   description: "Talk with the bot or teach it new responses",
   category: "talk",
@@ -115,10 +115,10 @@ module.exports.onStart = async ({ api, event, args }) => {
 module.exports.onChat = async ({ api, event }) => {
   const { threadID, messageID, body, senderID } = event;
 
-  const cMessages = ["কি হয়ছে বেবি দাকস কেন 🍆🙂", "হুম বল🐸", "Ami ekhane bby 🥹🥹", "Amake vhule jaw 🤌😫", "Ei ne amar rubbish boss er id:https://www.facebook.com/Itz.HaSaN.00 amare disturb korbi nah jaa", "ki hoiche ki koibi ?🐐", "kire bukachuda dakhtechos killai etw🐐👈", "Ami shudhu hasan er bbu🤌😫"];
+  const cMessages = ["কি হয়ছে বেবি দাকস কেন 😗", "হুম বল🐸", "Ami ekhane bby 🥹🥹", "Amake vhule jaw 🤌😫", "Ei ne amar rubbish boss er id:Dbz_Mahin on instragram follow diya des", "ki hoiche ki koibi ?🐐", "kire bukachuda dakhtechos killai etw🐐👈", "Ami shudhu Mahin er bbu🤌😫","I love you bby💋","Ki hoise ki bolbi😒","aso kheli bbu😘","Ki jann amake ki vule geso🤷‍♂️🥺","Kita ato dakos kan?","mahin re dak de🦋","Kire tui na morsiles🌚","Aso bbu prem kori?🌸","Alabu bby🌚","yoo bbu ta🤭","Ki hoise sona😏","Umahhhhhhhhhhhhhhh🤭💋","ole ole amar sonta dake je🙈","💋aije","ato disturbna kore amr owner re sms dew🥺🦋","huu bol ki bolbi","ole ole amar bbu ta dake je🤷‍♂️","Ajke jodi amar boss er 32 🙈ta ex na hoito taile prem kortam🥺tar sate💋"];
   const userInput = body.toLowerCase().trim();
 
-  const keywords = ["bbu", "hey", "bbz", "বট", "robot"];
+  const keywords = ["bbu", "hey", "bbz", "বট", "robot",  "Makima"];
 
   if (keywords.some((keyword) => userInput.startsWith(keyword))) {
     const isQuestion = userInput.split(" ").length > 1;
@@ -129,7 +129,7 @@ module.exports.onChat = async ({ api, event }) => {
         const res = await axios.get(
           `${await getAPIBase()}/bby?text=${encodeURIComponent(question)}&uid=${senderID}`
         );
-        const replyMsg = makeBold(res.data?.text || "I couldn't understand that. Please teach me!");
+        const replyMsg = makeBold(res.data?.text || "I couldn't understand that. Please teach me!🥺");
         const react = res.data.react || "";
 
         return api.sendMessage(replyMsg + react, threadID, (error, info) => {
@@ -143,7 +143,7 @@ module.exports.onChat = async ({ api, event }) => {
           }
         }, messageID);
       } catch (error) {
-        return api.sendMessage("error🦆💨", threadID, messageID);
+        return api.sendMessage("error🦆💨Mahin ata amke teach kore nai🦋tumi koro plz🙈", threadID, messageID);
       }
     } else {
       const rMsg = cMessages[Math.floor(Math.random() * cMessages.length)];
